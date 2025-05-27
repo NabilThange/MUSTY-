@@ -1,80 +1,254 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createSupabaseBrowserClient } from "@/lib/supabase/client"
+import type { SupabaseClient } from "@supabase/supabase-js"
+import Groq from "groq-sdk"
 import { useSearchParams, useRouter } from "next/navigation"
-import { MessageCircle, CreditCard, HelpCircle, Brain, Upload, ArrowLeft, Send, RefreshCw } from "lucide-react"
+import { MessageCircle, CreditCard, HelpCircle, Brain, Upload, ArrowLeft, Send, RefreshCw, Layers } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAcademicContext } from "@/contexts/academic-context"
 import Link from "next/link"
 
+// Ensure type safety for academic context
+interface AcademicInfo {
+  year: number;
+  semester: number;
+  branch: string;
+}
+
+// Groq AI Client with browser safety
+const groqApiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY || ''
+
+// Only initialize Groq client on the client side
+const getGroqClient = () => {
+  if (typeof window !== 'undefined') {
+    return new Groq({ 
+      apiKey: groqApiKey, 
+      dangerouslyAllowBrowser: true 
+    })
+  }
+  return null
+}
+
+// Type Definitions
 type AIMode = "chat" | "flashcards" | "quiz" | "mindmap"
+type ContextType = "syllabus" | "upload"
+
+interface AIMessage {
+  role: "user" | "assistant"
+  content: string
+  timestamp: number
+}
+
+interface StudyResource {
+  id: number
+  type: string
+  content: string
+  source: string
+  year: number
+  semester: number
+  branch: string
+}
+
+interface AIPromptContext {
+  resources: StudyResource[]
+  mode: AIMode
+  userMessage: string
+  academicInfo: AcademicInfo
+}
+
+// Dynamic AI Prompt Generator
+function generateDynamicPrompt(context: AIPromptContext): string {
+  const { resources, mode, userMessage, academicInfo } = context
+  
+  const resourceContext = resources
+    .map(r => `[${r.type.toUpperCase()}] ${r.content}`)
+    .join('\n\n')
+
+  const basePrompt = `You are an AI study assistant for ${academicInfo.year} year, ${academicInfo.branch} branch, Semester ${academicInfo.semester}.
+
+Available Study Resources:
+${resourceContext}
+
+`
+
+  switch (mode) {
+    case "chat":
+      return `${basePrompt}Provide a detailed, academic response to the following query, using the context above:
+
+Query: ${userMessage}
+
+Response should be:
+- Precise and informative
+- Cite sources from the available resources
+- Use academic language
+- Explain complex concepts clearly`
+
+    case "flashcards":
+      return `${basePrompt}Generate high-quality study flashcards based on the context and this topic:
+
+Topic: ${userMessage}
+
+Flashcard Format:
+- Front: Concise, clear question or term
+- Back: Detailed explanation, key points, or definition
+- Include relevant context from study resources`
+
+    case "quiz":
+      return `${basePrompt}Create a challenging academic quiz question related to:
+
+Topic: ${userMessage}
+
+Quiz Question Requirements:
+- Difficulty level appropriate for ${academicInfo.year} year students
+- Multiple choice with 4 options
+- One correct answer
+- Include a brief explanation of the correct answer
+- Derive content from the available study resources`
+
+    case "mindmap":
+      return `${basePrompt}Generate a structured mindmap for the following topic:
+
+Topic: ${userMessage}
+
+Mindmap Guidelines:
+- Use a hierarchical, tree-like structure
+- Include main concept, branches, and sub-branches
+- Derive connections and hierarchy from study resources
+- Ensure academic accuracy and depth`
+
+    default:
+      return basePrompt
+  }
+}
 
 export default function AIAssistantPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { academicInfo, isContextSet } = useAcademicContext()
+  
+  // Enhanced state management
   const [activeMode, setActiveMode] = useState<AIMode>("chat")
-  const [contextType, setContextType] = useState<"syllabus" | "upload">("syllabus")
-  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([])
+  const [contextType, setContextType] = useState<ContextType>("syllabus")
+  const [messages, setMessages] = useState<AIMessage[]>([])
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  
+  // New state for resources and AI context
+  const [studyResources, setStudyResources] = useState<StudyResource[]>([])
+  const [groqClient, setGroqClient] = useState<Groq | null>(null)
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null)
 
-  // Set mode from URL params
+  // Initialize clients on client-side mount
+  useEffect(() => {
+    const groqClientInstance = getGroqClient()
+    
+    // Supabase client initialization
+    if (typeof window !== 'undefined') {
+      const client = createSupabaseBrowserClient()
+      setSupabaseClient(client)
+    }
+    
+    if (groqClientInstance) {
+      setGroqClient(groqClientInstance)
+    }
+  }, [])
+
+  // Fetch Study Resources from Supabase
+  useEffect(() => {
+    async function fetchStudyResources() {
+      if (!isContextSet || !supabaseClient) return
+
+      const { data, error } = await supabaseClient
+        .from('study_resources')
+        .select('*')
+        .eq('year', academicInfo.year.toString())
+        .eq('semester', academicInfo.semester.toString())
+        .eq('branch', academicInfo.branch)
+
+      if (error) {
+        console.error("Error fetching study resources:", error)
+        return
+      }
+
+      setStudyResources(data || [])
+    }
+
+    fetchStudyResources()
+  }, [academicInfo, isContextSet, supabaseClient])
+
+  // Mode and context persistence
   useEffect(() => {
     const mode = searchParams.get("mode") as AIMode
     if (mode && ["chat", "flashcards", "quiz", "mindmap"].includes(mode)) {
       setActiveMode(mode)
-    } else {
-      setActiveMode("chat")
     }
   }, [searchParams])
 
-  // Handle mode switching with URL update
+  // Enhanced mode switching with context preservation
   const handleModeSwitch = (newMode: AIMode) => {
     setActiveMode(newMode)
-    // Clear messages when switching modes for better UX
-    setMessages([])
-    // Update URL with new mode
     router.push(`/ai-assistant?mode=${newMode}`)
   }
 
+  // AI Message Handler
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return
+    if (!inputMessage.trim() || isLoading || !groqClient) return
 
-    const newMessage = { role: "user" as const, content: inputMessage }
-    setMessages((prev) => [...prev, newMessage])
+    const newMessage: AIMessage = { 
+      role: "user", 
+      content: inputMessage,
+      timestamp: +Date.now()
+    }
+    
+    setMessages(prev => [...prev, newMessage])
     setInputMessage("")
     setIsLoading(true)
 
-    // Simulate AI response
-    setTimeout(() => {
-      const response = {
-        role: "assistant" as const,
-        content: getAIResponse(inputMessage, activeMode, academicInfo),
+    try {
+      const promptContext: AIPromptContext = {
+        resources: studyResources,
+        mode: activeMode,
+        userMessage: inputMessage,
+        academicInfo: {
+          year: parseInt(academicInfo.year || '0', 10),
+          semester: parseInt(academicInfo.semester || '0', 10),
+          branch: academicInfo.branch
+        }
       }
-      setMessages((prev) => [...prev, response])
+
+      const dynamicPrompt = generateDynamicPrompt(promptContext)
+
+      const aiResponse = await groqClient.chat.completions.create({
+        messages: [{ role: "user", content: dynamicPrompt }],
+        model: "llama3-8b-8192",
+        temperature: 0.7,
+        max_tokens: 1024
+      })
+
+      const assistantMessage: AIMessage = {
+        role: "assistant",
+        content: aiResponse.choices[0]?.message?.content || "I couldn't generate a response.",
+        timestamp: +Date.now()
+      }
+
+      setMessages(prev => [...prev, assistantMessage])
+    } catch (error) {
+      console.error("AI Response Error:", error)
+      const errorMessage: AIMessage = {
+        role: "assistant",
+        content: "Sorry, I encountered an error processing your request.",
+        timestamp: +Date.now()
+      }
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
       setIsLoading(false)
-    }, 1000)
-  }
-
-  const getAIResponse = (message: string, mode: AIMode, context: any) => {
-    const contextInfo = `Based on your ${context.year} ${context.branch} Semester ${context.semester} syllabus:`
-
-    switch (mode) {
-      case "chat":
-        return `${contextInfo} I can help explain concepts, solve problems, and answer questions about your subjects. What specific topic would you like to explore?`
-      case "flashcards":
-        return `${contextInfo} I'll create flashcards for your study topics. Here are some sample flashcards for your subjects:\n\n**Front:** What is Object-Oriented Programming?\n**Back:** A programming paradigm based on objects and classes...\n\nWould you like me to create more flashcards for a specific topic?`
-      case "quiz":
-        return `${contextInfo} Here's a quick quiz question:\n\n**Question:** Which of the following is NOT a principle of OOP?\na) Encapsulation\nb) Inheritance\nc) Compilation\nd) Polymorphism\n\n**Answer:** c) Compilation\n\nWould you like more quiz questions?`
-      case "mindmap":
-        return `${contextInfo} I'll create a mindmap structure for your topic:\n\n**Computer Networks**\n├── Physical Layer\n├── Data Link Layer\n├── Network Layer\n└── Application Layer\n\nWould you like me to expand any branch or create a mindmap for another topic?`
-      default:
-        return "I'm here to help with your studies!"
     }
   }
 
+  // Render context warning if not set
   if (!isContextSet) {
     return (
       <div className="min-h-screen bg-white font-mono flex items-center justify-center">
@@ -88,6 +262,38 @@ export default function AIAssistantPage() {
       </div>
     )
   }
+
+  // Mode configuration
+  const modes = [
+    { 
+      mode: "chat", 
+      icon: MessageCircle, 
+      label: "CHAT", 
+      desc: "Ask questions & get explanations",
+      emoji: "💬"
+    },
+    { 
+      mode: "flashcards", 
+      icon: CreditCard, 
+      label: "FLASHCARDS", 
+      desc: "Generate study cards",
+      emoji: "🃏"
+    },
+    { 
+      mode: "quiz", 
+      icon: HelpCircle, 
+      label: "QUIZ", 
+      desc: "Practice with questions",
+      emoji: "❓"
+    },
+    { 
+      mode: "mindmap", 
+      icon: Brain, 
+      label: "MINDMAP", 
+      desc: "Visual concept maps",
+      emoji: "🧠"
+    }
+  ]
 
   return (
     <div className="min-h-screen bg-white font-mono">
@@ -126,12 +332,7 @@ export default function AIAssistantPage() {
             <div className="bg-white border-8 border-black p-6 shadow-brutal">
               <h3 className="text-xl font-black mb-4 uppercase">AI MODES</h3>
               <div className="space-y-3">
-                {[
-                  { mode: "chat", icon: MessageCircle, label: "CHAT", desc: "Ask questions & get explanations" },
-                  { mode: "flashcards", icon: CreditCard, label: "FLASHCARDS", desc: "Generate study cards" },
-                  { mode: "quiz", icon: HelpCircle, label: "QUIZ", desc: "Practice with questions" },
-                  { mode: "mindmap", icon: Brain, label: "MINDMAP", desc: "Visual concept maps" },
-                ].map(({ mode, icon: Icon, label, desc }) => (
+                {modes.map(({ mode, icon: Icon, label, desc }) => (
                   <button
                     key={mode}
                     onClick={() => handleModeSwitch(mode as AIMode)}
@@ -151,31 +352,21 @@ export default function AIAssistantPage() {
               </div>
             </div>
 
-            {/* Context Selector */}
+            {/* Context Information Card */}
             <div className="bg-white border-8 border-black p-6 shadow-brutal">
               <h3 className="text-xl font-black mb-4 uppercase text-black">STUDY CONTEXT</h3>
-              <div className="space-y-3">
-                <button
-                  onClick={() => setContextType("syllabus")}
-                  className={`w-full p-4 border-4 border-black text-left transition-all ${contextType === "syllabus" ? "bg-green-600 text-white shadow-brutal" : "bg-white text-black hover:bg-gray-100"}`}
-                  style={{ color: contextType === 'syllabus' ? 'white' : 'black' }}
-                >
-                  <div className="font-black">📚 USE SYLLABUS</div>
-                  <div className="text-sm font-bold opacity-80">
-                    {academicInfo.year} {academicInfo.branch} content
+              <div className="space-y-4">
+                <div className="bg-green-100 border-4 border-black p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Layers className="h-5 w-5" />
+                    <span className="font-black">RESOURCES LOADED</span>
                   </div>
-                </button>
-                <button
-                  onClick={() => setContextType("upload")}
-                  className={`w-full p-4 border-4 border-black text-left transition-all ${contextType === "upload" ? "bg-yellow-500 text-white shadow-brutal" : "bg-white text-black hover:bg-gray-100"}`}
-                  style={{ color: contextType === 'upload' ? 'white' : 'black' }}
-                >
-                  <div className="flex items-center gap-2 font-black">
-                    <Upload className="h-5 w-5" />
-                    UPLOAD NOTES
-                  </div>
-                  <div className="text-sm font-bold opacity-80">Use your own materials</div>
-                </button>
+                  <ul className="list-disc list-inside font-bold text-sm">
+                    {studyResources.map((resource, index) => (
+                      <li key={index}>{resource.type.toUpperCase()} from {resource.source}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -186,15 +377,10 @@ export default function AIAssistantPage() {
               {/* Mode Header */}
               <div className="border-b-4 border-black p-6 bg-gray-50">
                 <h2 className="text-2xl font-black uppercase text-black">
-                  {activeMode === "chat" && "💬 AI CHAT"}
-                  {activeMode === "flashcards" && "🃏 FLASHCARD GENERATOR"}
-                  {activeMode === "quiz" && "❓ QUIZ MAKER"}
-                  {activeMode === "mindmap" && "🧠 MINDMAP CREATOR"}
+                  {modes.find(m => m.mode === activeMode)?.emoji} {modes.find(m => m.mode === activeMode)?.label} MODE
                 </h2>
                 <p className="font-bold text-gray-600 mt-2">
-                  {contextType === "syllabus"
-                    ? `Using ${academicInfo.year} ${academicInfo.branch} Semester ${academicInfo.semester} syllabus`
-                    : "Ready to upload your study materials"}
+                  Using {academicInfo.year} {academicInfo.branch} Semester {academicInfo.semester} context
                 </p>
               </div>
 
@@ -203,22 +389,13 @@ export default function AIAssistantPage() {
                 {messages.length === 0 && (
                   <div className="text-center py-12">
                     <div className="text-6xl mb-4">
-                      {activeMode === "chat" && "💬"}
-                      {activeMode === "flashcards" && "🃏"}
-                      {activeMode === "quiz" && "❓"}
-                      {activeMode === "mindmap" && "🧠"}
+                      {modes.find(m => m.mode === activeMode)?.emoji}
                     </div>
                     <h3 className="text-xl font-black mb-2 text-black">
-                      {activeMode === "chat" && "START CHATTING"}
-                      {activeMode === "flashcards" && "CREATE FLASHCARDS"}
-                      {activeMode === "quiz" && "GENERATE QUIZ"}
-                      {activeMode === "mindmap" && "BUILD MINDMAP"}
+                      {modes.find(m => m.mode === activeMode)?.label} MODE
                     </h3>
                     <p className="font-bold text-gray-600">
-                      {activeMode === "chat" && "Ask me anything about your subjects!"}
-                      {activeMode === "flashcards" && "Tell me what topic you want to study"}
-                      {activeMode === "quiz" && "What subject should I quiz you on?"}
-                      {activeMode === "mindmap" && "What concept should I map out?"}
+                      {modes.find(m => m.mode === activeMode)?.desc}
                     </p>
                   </div>
                 )}
