@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import {
   User,
@@ -65,7 +64,6 @@ interface PrivacySettings {
 }
 
 export default function SettingsPage() {
-  const { authState, logout } = useAuth()
   const router = useRouter()
   const [activeSection, setActiveSection] = useState("account")
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)

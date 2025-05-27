@@ -36,7 +36,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useAuth } from "@/hooks/use-auth"
 import { useSemesterData } from "@/hooks/use-semester-data"
 
 interface StudySession {
@@ -69,7 +68,6 @@ export default function SchedulePage() {
   const [showAddSession, setShowAddSession] = useState(false)
   const [editingSession, setEditingSession] = useState<StudySession | null>(null)
 
-  const { authState } = useAuth()
   const { subjects } = useSemesterData("")
 
   // Generate sample sessions for demonstration

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import {
   User,
@@ -70,7 +69,6 @@ interface ActivityLog {
 }
 
 export default function ProfilePage() {
-  const { authState } = useAuth()
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
