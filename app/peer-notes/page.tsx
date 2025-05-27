@@ -61,13 +61,13 @@ export default function PeerNotesPage() {
           <div className="flex items-center gap-6">
             <Link href="/resources">
               <Button variant="outline" className="border-4 border-black font-bold">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4 mr-2 " />
                 RESOURCES
               </Button>
             </Link>
             <div className="flex items-center">
               <Users className="h-8 w-8 mr-3" />
-              <span className="font-black text-xl tracking-tighter">PEER NOTES</span>
+              <span className="font-black text-xl tracking-tighter text-black" style={{ color: 'black' }}>PEER NOTES</span>
             </div>
           </div>
         </div>
@@ -78,7 +78,7 @@ export default function PeerNotesPage() {
         <div className="space-y-8">
           {/* Page Header */}
           <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase">🤝 PEER NOTES</h1>
+            <h1 className="text-4xl md:text-6xl font-black text-black tracking-tighter uppercase " style={{ color: 'black' }}>🤝 PEER NOTES</h1>
             <div className="flex justify-center gap-3 items-center">
               <div className="h-6 w-6 bg-orange-500"></div>
               <div className="h-6 w-6 bg-blue-600"></div>
@@ -93,7 +93,8 @@ export default function PeerNotesPage() {
               <Input
                 type="search"
                 placeholder="Search peer notes..."
-                className="border-4 border-black pl-12 h-12 font-mono shadow-brutal focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-600"
+                className="bg-white text-black border-4 border-black pl-12 h-12 font-mono shadow-brutal focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-600"
+                style={{ color: 'black' }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -125,7 +126,7 @@ export default function PeerNotesPage() {
           {!isLoading && !error && filteredPeerNotes.length === 0 && (
             <div className="text-center py-16 bg-gray-100 border-4 border-dashed border-black">
               <Users className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-2xl font-black mb-2">NO PEER NOTES FOUND</h3>
+              <h3 className="text-2xl font-black mb-2 text-black" style={{ color: 'black' }}>NO PEER NOTES FOUND</h3>
               <p className="font-bold text-gray-600 mb-6">
                 {searchQuery
                   ? `No peer notes match "${searchQuery}"`

@@ -62,12 +62,12 @@ export default function SyllabusPage() {
             </Link>
             <div className="flex items-center">
               <BookOpen className="h-8 w-8 mr-3" />
-              <span className="font-black text-xl tracking-tighter">SYLLABUS</span>
+              <span className="font-black text-xl tracking-tighter text-black">SYLLABUS</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-2 bg-blue-100 border-4 border-black px-4 py-2">
+            <div className="hidden md:flex items-center gap-2 bg-blue-100 border-4 border-black text-black px-4 py-2">
               <span className="font-bold text-sm">
                 {academicInfo.year} • Sem {academicInfo.semester} • {academicInfo.branch}
               </span>
@@ -81,13 +81,13 @@ export default function SyllabusPage() {
         <div className="space-y-8">
           {/* Page Header */}
           <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase">SYLLABUS DOWNLOADS</h1>
+            <h1 className="text-4xl md:text-6xl font-black text-black tracking-tighter uppercase">SYLLABUS DOWNLOADS</h1>
             <div className="flex justify-center gap-3 items-center">
               <div className="h-6 w-6 bg-red-600"></div>
               <div className="h-6 w-6 bg-blue-600"></div>
               <div className="h-6 w-6 bg-yellow-500"></div>
             </div>
-            <p className="text-xl font-bold">
+            <p className="text-xl font-bold text-black">
               {academicInfo.year} • Semester {academicInfo.semester} • {academicInfo.branch}
             </p>
           </div>
@@ -99,7 +99,7 @@ export default function SyllabusPage() {
               <Input
                 type="search"
                 placeholder="Search subjects..."
-                className="border-4 border-black pl-12 h-12 font-mono shadow-brutal focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-600"
+                className="bg-white text-black border-4 border-black pl-12 h-12 font-mono shadow-brutal focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-black-600"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -142,7 +142,7 @@ export default function SyllabusPage() {
           {!isLoading && !error && filteredSubjects.length === 0 && (
             <div className="text-center py-16 bg-gray-100 border-4 border-dashed border-black">
               <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-2xl font-black mb-2">NO SUBJECTS FOUND</h3>
+              <h3 className="text-2xl font-black mb-2 text-red-600">NO SUBJECTS FOUND</h3>
               <p className="font-bold text-gray-600 mb-6">
                 {searchQuery
                   ? `No subjects match "${searchQuery}"`
@@ -159,21 +159,21 @@ export default function SyllabusPage() {
 
           {/* Study Tips */}
           <div className="bg-gradient-to-br from-green-500 to-blue-500 border-8 border-black p-8 shadow-brutal">
-            <h2 className="text-3xl font-black text-white mb-6 uppercase text-center">📚 STUDY TIPS</h2>
+            <h2 className="text-3xl font-black text-black mb-6 uppercase text-center">📚 STUDY TIPS</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white border-4 border-black p-4 text-center">
                 <div className="text-3xl mb-2">📖</div>
-                <div className="font-black">READ SYLLABUS</div>
+                <div className="font-black text-black">READ SYLLABUS</div>
                 <div className="text-sm font-bold text-gray-600">Understand what's covered</div>
               </div>
               <div className="bg-white border-4 border-black p-4 text-center">
                 <div className="text-3xl mb-2">🤖</div>
-                <div className="font-black">USE AI HELP</div>
+                <div className="font-black text-black">USE AI HELP</div>
                 <div className="text-sm font-bold text-gray-600">Get explanations & practice</div>
               </div>
               <div className="bg-white border-4 border-black p-4 text-center">
                 <div className="text-3xl mb-2">📝</div>
-                <div className="font-black">PRACTICE REGULARLY</div>
+                <div className="font-black text-black">PRACTICE REGULARLY</div>
                 <div className="text-sm font-bold text-gray-600">Consistent study wins</div>
               </div>
             </div>

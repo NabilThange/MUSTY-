@@ -61,7 +61,7 @@ export function SyllabusCard({
           <span className="px-3 py-1 border-4 border-black font-black text-sm bg-blue-600 text-white">📖 SYLLABUS</span>
           <span className="font-bold text-gray-600">{credits} Credits</span>
         </div>
-        <h3 className="text-xl font-black mb-2">{subject_name}</h3>
+        <h3 className="text-xl font-black mb-2 text-black">{subject_name}</h3>
         <p className="font-bold text-gray-600">{subject_code}</p>
         <p className="text-sm font-bold text-blue-600 mt-2">
           {year} • Sem {semester} • {branch}

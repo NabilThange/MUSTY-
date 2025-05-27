@@ -109,7 +109,7 @@ export default function ResourcesPage() {
   return (
     <div className="min-h-screen bg-white font-mono">
       {/* Header */}
-      <header className="sticky top-0 z-40 w-full border-b-8 border-black bg-white">
+      <header className="sticky top-0 z-40 w-full border-b-8 border-black bg-white text-black">
         <div className="container flex h-20 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-6">
             <Link href="/dashboard">
@@ -120,7 +120,7 @@ export default function ResourcesPage() {
             </Link>
             <div className="flex items-center">
               <FileText className="h-8 w-8 mr-3" />
-              <span className="font-black text-xl tracking-tighter">RESOURCES</span>
+              <span className="font-black text-xl tracking-tighter ">RESOURCES</span>
             </div>
           </div>
 
@@ -140,7 +140,7 @@ export default function ResourcesPage() {
         <div className="space-y-8">
           {/* Page Header */}
           <div className="text-center space-y-4">
-            <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase">{getPageTitle()}</h1>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase text-black">{getPageTitle()}</h1>
             <div className="flex justify-center gap-3 items-center">
               <div className="h-6 w-6 bg-yellow-500"></div>
               <div className="h-6 w-6 bg-green-600"></div>
@@ -160,7 +160,7 @@ export default function ResourcesPage() {
                 <Input
                   type="search"
                   placeholder="Search resources, subjects..."
-                  className="border-4 border-black pl-12 h-12 font-mono shadow-brutal focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-600"
+                  className="bg-white text-black border-4 border-black pl-12 h-12 font-mono shadow-brutal focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-600"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -190,26 +190,46 @@ export default function ResourcesPage() {
 
           {/* Resource Stats */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-blue-600 text-white border-8 border-black p-4 shadow-brutal text-center">
+            <button
+              key="syllabus-stats"
+              onClick={() => handleTypeSwitch('syllabus')}
+              className="bg-blue-600 text-white border-8 border-black p-4 shadow-brutal text-center hover:opacity-80 transition-opacity"
+            >
               <div className="text-3xl font-black">{stats.syllabus}</div>
-              <div className="font-bold">SYLLABUS</div>
-            </div>
-            <div className="bg-yellow-500 text-black border-8 border-black p-4 shadow-brutal text-center">
+              <div className="font-bold ">SYLLABUS</div>
+            </button>
+            <button
+              key="pyq-stats"
+              onClick={() => handleTypeSwitch('pyq')}
+              className="bg-yellow-500 text-white border-8 border-black p-4 shadow-brutal text-center hover:opacity-80 transition-opacity"
+            >
               <div className="text-3xl font-black">{stats.pyq}</div>
               <div className="font-bold">PYQ PAPERS</div>
-            </div>
-            <div className="bg-green-600 text-white border-8 border-black p-4 shadow-brutal text-center">
+            </button>
+            <button
+              key="solutions-stats"
+              onClick={() => handleTypeSwitch('pyq_solutions')}
+              className="bg-green-600 text-white border-8 border-black p-4 shadow-brutal text-center hover:opacity-80 transition-opacity"
+            >
               <div className="text-3xl font-black">{stats.pyq_solutions}</div>
               <div className="font-bold">SOLUTIONS</div>
-            </div>
-            <div className="bg-purple-600 text-white border-8 border-black p-4 shadow-brutal text-center">
+            </button>
+            <button
+              key="question-banks-stats"
+              onClick={() => handleTypeSwitch('question_bank')}
+              className="bg-purple-600 text-white border-8 border-black p-4 shadow-brutal text-center hover:opacity-80 transition-opacity"
+            >
               <div className="text-3xl font-black">{stats.question_bank}</div>
               <div className="font-bold">QUESTION BANKS</div>
-            </div>
-            <div className="bg-orange-500 text-white border-8 border-black p-4 shadow-brutal text-center">
+            </button>
+            <button
+              key="peer-notes-stats"
+              onClick={() => router.push('/peer-notes')}
+              className="bg-orange-500 text-white border-8 border-black p-4 shadow-brutal text-center hover:opacity-80 transition-opacity"
+            >
               <div className="text-3xl font-black">{stats.peer_notes}</div>
               <div className="font-bold">PEER NOTES</div>
-            </div>
+            </button>
           </div>
 
           {/* Error State */}
@@ -252,7 +272,7 @@ export default function ResourcesPage() {
           {!isLoading && !error && filteredResources.length === 0 && (
             <div className="text-center py-16 bg-gray-100 border-4 border-dashed border-black">
               <FileText className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-2xl font-black mb-2">NO RESOURCES FOUND</h3>
+              <h3 className="text-2xl font-black mb-2 text-black">NO RESOURCES FOUND</h3>
               <p className="font-bold text-gray-600 mb-6">
                 {searchQuery
                   ? `No resources match "${searchQuery}"`

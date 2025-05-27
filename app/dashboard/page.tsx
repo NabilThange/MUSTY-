@@ -43,13 +43,13 @@ export default function DashboardPage() {
                 height={48}
                 className="w-10 h-10 md:w-12 md:h-12 border-2 border-black"
               />
-              <span className="font-black text-2xl tracking-tighter">MUSTY</span>
+              <span className="font-black text-2xl tracking-tighter text-black">MUSTY</span>
             </Link>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-2 bg-blue-100 border-4 border-black px-4 py-2">
-              <span className="font-bold text-sm">
+              <span className="font-bold text-sm text-black">
                 {academicInfo.year} • Sem {academicInfo.semester}
                 {academicInfo.branch && ` • ${academicInfo.branch}`}
               </span>
@@ -68,9 +68,9 @@ export default function DashboardPage() {
           {/* Welcome Section */}
           <div className="text-center space-y-3">
             <div className="flex justify-center items-center gap-4 flex-wrap">
-              <h1 className="text-xl md:text-2xl font-black tracking-tighter uppercase">ACE THIS SEMESTER</h1>
+              <h1 className="text-xl md:text-2xl font-black tracking-tighter uppercase text-black">ACE THIS SEMESTER</h1>
               <div className="bg-blue-100 border-4 border-black px-3 py-1">
-                <span className="font-black text-base tracking-tight uppercase">
+                <span className="font-black text-base tracking-tight uppercase text-black">
                   {academicInfo.year} • Semester {academicInfo.semester}
                   {academicInfo.branch && ` • ${academicInfo.branch}`}
                 </span>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {/* PYQs */}
               <Link href="/resources?type=pyq" className="group">
-                <div className="bg-yellow-500 text-black border-8 border-black p-6 shadow-brutal group-hover:translate-y-2 group-hover:shadow-none transition-all text-center">
+                <div className="bg-yellow-500 text-white border-8 border-black p-6 shadow-brutal group-hover:translate-y-2 group-hover:shadow-none transition-all text-center">
                   <div className="text-4xl mb-4">📄</div>
                   <h3 className="text-xl font-black mb-3 uppercase">PYQs</h3>
                   <p className="font-bold text-sm mb-4">Previous Year Question Papers</p>
@@ -220,19 +220,19 @@ export default function DashboardPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="bg-white border-8 border-black p-6 shadow-brutal text-center">
               <div className="text-3xl font-black text-yellow-600 mb-2">150+</div>
-              <div className="font-bold text-sm">PYQ PAPERS</div>
+              <div className="font-bold text-sm text-black">PYQ PAPERS</div>
             </div>
             <div className="bg-white border-8 border-black p-6 shadow-brutal text-center">
               <div className="text-3xl font-black text-green-600 mb-2">80+</div>
-              <div className="font-bold text-sm">SOLUTIONS</div>
+              <div className="font-bold text-sm text-black">SOLUTIONS</div>
             </div>
             <div className="bg-white border-8 border-black p-6 shadow-brutal text-center">
               <div className="text-3xl font-black text-purple-600 mb-2">200+</div>
-              <div className="font-bold text-sm">QUESTIONS</div>
+              <div className="font-bold text-sm text-black">QUESTIONS</div>
             </div>
             <div className="bg-white border-8 border-black p-6 shadow-brutal text-center">
               <div className="text-3xl font-black text-orange-600 mb-2">50+</div>
-              <div className="font-bold text-sm">PEER NOTES</div>
+              <div className="font-bold text-sm text-black">PEER NOTES</div>
             </div>
           </div>
         </div>

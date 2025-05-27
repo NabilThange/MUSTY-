@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { DatabaseService } from "@/lib/database-service"
-import { useAuth } from "./use-auth"
-import { getMockSubjectsForSemester, getMockProgressForSemester } from "@/lib/mock-semester-data"
 
 export function useSemesterData(semesterId?: string) {
-  const { authState } = useAuth()
   const [subjects, setSubjects] = useState<any[]>([])
   const [progress, setProgress] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -14,7 +11,7 @@ export function useSemesterData(semesterId?: string) {
 
   useEffect(() => {
     async function fetchSemesterData() {
-      if (!semesterId || !authState.user?.id) {
+      if (!semesterId) {
         setLoading(false)
         return
       }
@@ -23,26 +20,14 @@ export function useSemesterData(semesterId?: string) {
         setLoading(true)
         setError(null)
 
-        // Extract semester number from semesterId (format: "sem-1", "sem-2", etc.)
-        const semesterNumber = Number.parseInt(semesterId.split("-")[1])
+        const [subjectsData, progressData] = await Promise.all([
+          DatabaseService.getSubjectsForSemester(semesterId),
+          DatabaseService.getUserProgressForSemester("public-user", semesterId),
+        ])
 
-        // For FY semesters (1 & 2), use mock data
-        if (semesterNumber <= 2) {
-          const mockSubjects = getMockSubjectsForSemester(semesterNumber)
-          const mockProgress = getMockProgressForSemester(semesterNumber, authState.user.id)
+        setSubjects(subjectsData)
+        setProgress(progressData)
 
-          setSubjects(mockSubjects)
-          setProgress(mockProgress)
-        } else {
-          // For higher semesters, use database (when implemented)
-          const [subjectsData, progressData] = await Promise.all([
-            DatabaseService.getSubjectsForSemester(semesterId),
-            DatabaseService.getUserProgressForSemester(authState.user.id, semesterId),
-          ])
-
-          setSubjects(subjectsData)
-          setProgress(progressData)
-        }
       } catch (err) {
         console.error("Error fetching semester data:", err)
         setError("Failed to load semester data")
@@ -52,9 +37,8 @@ export function useSemesterData(semesterId?: string) {
     }
 
     fetchSemesterData()
-  }, [semesterId, authState.user?.id])
+  }, [semesterId])
 
-  // Calculate progress statistics
   const progressStats = {
     totalTopics: progress.length,
     completedTopics: progress.filter((p) => p.is_completed).length,

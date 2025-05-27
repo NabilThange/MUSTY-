@@ -161,7 +161,7 @@ export function ResourceCard({ type, data, onDownload, onAIChat, onRate }: Resou
           {config.badge && <span className="font-bold text-gray-600">{config.badge}</span>}
         </div>
 
-        <h3 className="text-xl font-black mb-2">{config.title}</h3>
+        <h3 className="text-xl font-black mb-2 text-black">{config.title}</h3>
         <p className="font-bold text-gray-600">{config.subtitle}</p>
 
         {/* Type-specific additional info */}

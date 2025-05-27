@@ -4,6 +4,7 @@ import "./globals.css"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AcademicProvider } from "@/contexts/academic-context"
+import { StagewiseToolbarWrapper } from "@/components/stagewise-toolbar-wrapper"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,13 +26,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className="dark" style={{ colorScheme: "dark" }}>
+      <body className={inter.className} data-gptw="">
         <AcademicProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+          <ThemeProvider attribute="class" forcedTheme="dark" enableSystem={false} disableTransitionOnChange>
             {children}
           </ThemeProvider>
         </AcademicProvider>
+        <StagewiseToolbarWrapper />
       </body>
     </html>
   )

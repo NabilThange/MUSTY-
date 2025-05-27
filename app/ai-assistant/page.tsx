@@ -104,13 +104,13 @@ export default function AIAssistantPage() {
             <div className="flex items-center">
               <div className="h-8 w-8 bg-yellow-500 border-4 border-black rotate-12"></div>
               <div className="h-8 w-8 bg-blue-600 border-4 border-black -ml-4 -rotate-12"></div>
-              <span className="font-black text-xl tracking-tighter ml-3">STUDGEM AI</span>
+              <span className="font-black text-xl tracking-tighter ml-3 text-black">STUDGEM AI</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-2 bg-blue-100 border-4 border-black px-4 py-2">
-              <span className="font-bold text-sm">
+              <span className="font-bold text-sm text-black">
                 {academicInfo.year} • Sem {academicInfo.semester} • {academicInfo.branch}
               </span>
             </div>
@@ -136,7 +136,7 @@ export default function AIAssistantPage() {
                     key={mode}
                     onClick={() => handleModeSwitch(mode as AIMode)}
                     className={`w-full p-4 border-4 border-black text-left transition-all ${
-                      activeMode === mode ? "bg-blue-600 text-white shadow-brutal" : "bg-white hover:bg-gray-100"
+                      activeMode === mode ? "bg-blue-600 text-white shadow-brutal" : "bg-white text-black hover:bg-gray-100"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -153,13 +153,12 @@ export default function AIAssistantPage() {
 
             {/* Context Selector */}
             <div className="bg-white border-8 border-black p-6 shadow-brutal">
-              <h3 className="text-xl font-black mb-4 uppercase">STUDY CONTEXT</h3>
+              <h3 className="text-xl font-black mb-4 uppercase text-black">STUDY CONTEXT</h3>
               <div className="space-y-3">
                 <button
                   onClick={() => setContextType("syllabus")}
-                  className={`w-full p-4 border-4 border-black text-left transition-all ${
-                    contextType === "syllabus" ? "bg-green-600 text-white shadow-brutal" : "bg-white hover:bg-gray-100"
-                  }`}
+                  className={`w-full p-4 border-4 border-black text-left transition-all ${contextType === "syllabus" ? "bg-green-600 text-white shadow-brutal" : "bg-white text-black hover:bg-gray-100"}`}
+                  style={{ color: contextType === 'syllabus' ? 'white' : 'black' }}
                 >
                   <div className="font-black">📚 USE SYLLABUS</div>
                   <div className="text-sm font-bold opacity-80">
@@ -168,9 +167,8 @@ export default function AIAssistantPage() {
                 </button>
                 <button
                   onClick={() => setContextType("upload")}
-                  className={`w-full p-4 border-4 border-black text-left transition-all ${
-                    contextType === "upload" ? "bg-yellow-500 text-black shadow-brutal" : "bg-white hover:bg-gray-100"
-                  }`}
+                  className={`w-full p-4 border-4 border-black text-left transition-all ${contextType === "upload" ? "bg-yellow-500 text-white shadow-brutal" : "bg-white text-black hover:bg-gray-100"}`}
+                  style={{ color: contextType === 'upload' ? 'white' : 'black' }}
                 >
                   <div className="flex items-center gap-2 font-black">
                     <Upload className="h-5 w-5" />
@@ -187,7 +185,7 @@ export default function AIAssistantPage() {
             <div className="bg-white border-8 border-black shadow-brutal h-[600px] flex flex-col">
               {/* Mode Header */}
               <div className="border-b-4 border-black p-6 bg-gray-50">
-                <h2 className="text-2xl font-black uppercase">
+                <h2 className="text-2xl font-black uppercase text-black">
                   {activeMode === "chat" && "💬 AI CHAT"}
                   {activeMode === "flashcards" && "🃏 FLASHCARD GENERATOR"}
                   {activeMode === "quiz" && "❓ QUIZ MAKER"}
@@ -210,7 +208,7 @@ export default function AIAssistantPage() {
                       {activeMode === "quiz" && "❓"}
                       {activeMode === "mindmap" && "🧠"}
                     </div>
-                    <h3 className="text-xl font-black mb-2">
+                    <h3 className="text-xl font-black mb-2 text-black">
                       {activeMode === "chat" && "START CHATTING"}
                       {activeMode === "flashcards" && "CREATE FLASHCARDS"}
                       {activeMode === "quiz" && "GENERATE QUIZ"}
@@ -255,7 +253,7 @@ export default function AIAssistantPage() {
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     placeholder={`Ask about ${academicInfo.branch} topics...`}
-                    className="flex-1 border-4 border-black font-mono"
+                    className="flex-1 border-4 border-black font-mono bg-white text-black"
                     onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                   />
                   <Button

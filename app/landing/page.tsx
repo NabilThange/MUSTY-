@@ -33,7 +33,7 @@ export default function LandingPage() {
               height={48}
               className="w-10 h-10 md:w-12 md:h-12 border-2 border-black"
             />
-            <span className="font-black text-lg md:text-2xl tracking-tighter text-white">MUSTY</span>
+            <span className="font-black text-lg md:text-2xl tracking-tighter text-black">MUSTY</span>
           </div>
         </div>
       </header>

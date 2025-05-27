@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { useAcademicContext } from "@/contexts/academic-context"
 import { getUserAvailableSemesters } from "@/lib/semester-utils"
 
 interface SemesterOption {
@@ -19,7 +19,7 @@ interface SemesterSelectorProps {
 }
 
 export function SemesterSelector({ onSemesterChange, selectedSemesterId }: SemesterSelectorProps) {
-  const { authState } = useAuth()
+  const { academicInfo, isContextSet } = useAcademicContext()
   const [semesters, setSemesters] = useState<SemesterOption[]>([])
   const [availableSemesters, setAvailableSemesters] = useState<SemesterOption[]>([])
   const [selectedSemester, setSelectedSemester] = useState<SemesterOption | null>(null)
@@ -27,7 +27,7 @@ export function SemesterSelector({ onSemesterChange, selectedSemesterId }: Semes
 
   useEffect(() => {
     async function fetchSemesters() {
-      if (!authState.user) {
+      if (!isContextSet || !academicInfo.year) {
         setLoading(false)
         return
       }
@@ -35,8 +35,7 @@ export function SemesterSelector({ onSemesterChange, selectedSemesterId }: Semes
       try {
         setLoading(true)
 
-        // Get user's year level (FY, SY, TY, BE)
-        const userYear = authState.user.yearOfStudy || "FY"
+        const userYear = academicInfo.year || "FE"
         const availableMapping = getUserAvailableSemesters(userYear)
 
         if (!availableMapping) {
@@ -44,7 +43,6 @@ export function SemesterSelector({ onSemesterChange, selectedSemesterId }: Semes
           return
         }
 
-        // Create semester options based on user's year
         const semesterOptions = availableMapping.semesters.map((semNum, index) => ({
           id: `sem-${semNum}`,
           semester_number: semNum,
@@ -56,10 +54,9 @@ export function SemesterSelector({ onSemesterChange, selectedSemesterId }: Semes
         setSemesters(semesterOptions)
         setAvailableSemesters(semesterOptions)
 
-        // Set default to current semester or first available
         const defaultSemester = selectedSemesterId
           ? semesterOptions.find((s) => s.id === selectedSemesterId)
-          : semesterOptions.find((s) => s.semester_number === authState.user.current_semester) || semesterOptions[0]
+          : semesterOptions.find((s) => s.semester_number === parseInt(academicInfo.semester)) || semesterOptions[0]
 
         if (defaultSemester) {
           setSelectedSemester(defaultSemester)
@@ -73,14 +70,13 @@ export function SemesterSelector({ onSemesterChange, selectedSemesterId }: Semes
     }
 
     fetchSemesters()
-  }, [authState.user?.yearOfStudy, authState.user?.current_semester, selectedSemesterId])
+  }, [isContextSet, academicInfo.year, academicInfo.semester, selectedSemesterId])
 
   const handleSemesterChange = (semesterId: string) => {
     const semester = availableSemesters.find((s) => s.id === semesterId)
     if (semester) {
       setSelectedSemester(semester)
       onSemesterChange(semesterId, semester)
-      // Save to localStorage for persistence
       localStorage.setItem("selected_semester_id", semesterId)
     }
   }

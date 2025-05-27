@@ -2,25 +2,24 @@
 
 import { useState, useEffect } from "react"
 import { DatabaseService } from "@/lib/database-service"
-import { useAuth } from "./use-auth"
+import { useAcademicContext } from "../contexts/academic-context"
 
 // Hook for user progress
 export function useUserProgress(subjectId?: string) {
-  const { authState } = useAuth()
   const [progress, setProgress] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchProgress() {
-      if (!authState.user?.id || !subjectId) {
+      if (!subjectId) {
         setLoading(false)
         return
       }
 
       try {
         setLoading(true)
-        const data = await DatabaseService.getUserProgress(authState.user.id, subjectId)
+        const data = await DatabaseService.getUserProgress("public-user", subjectId)
         setProgress(data)
         setError(null)
       } catch (err) {
@@ -32,15 +31,12 @@ export function useUserProgress(subjectId?: string) {
     }
 
     fetchProgress()
-  }, [authState.user?.id, subjectId])
+  }, [subjectId])
 
   const markTopicComplete = async (topicId: string) => {
-    if (!authState.user?.id) return
-
     try {
-      await DatabaseService.markTopicComplete(authState.user.id, topicId)
-      // Refresh progress
-      const data = await DatabaseService.getUserProgress(authState.user.id, subjectId!)
+      await DatabaseService.markTopicComplete("public-user", topicId)
+      const data = await DatabaseService.getUserProgress("public-user", subjectId!)
       setProgress(data)
     } catch (err) {
       console.error("Error marking topic complete:", err)
@@ -52,23 +48,24 @@ export function useUserProgress(subjectId?: string) {
 
 // Hook for user subjects
 export function useUserSubjects() {
-  const { authState } = useAuth()
+  const { academicInfo, isContextSet } = useAcademicContext()
   const [subjects, setSubjects] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchSubjects() {
-      if (!authState.user?.program_id || !authState.user?.current_semester) {
+      if (!isContextSet || !academicInfo.year || !academicInfo.semester || !academicInfo.branch) {
         setLoading(false)
         return
       }
 
       try {
         setLoading(true)
-        const data = await DatabaseService.getSubjectsForProgram(
-          authState.user.program_id,
-          authState.user.current_semester,
+        const data = await DatabaseService.getSubjects(
+          academicInfo.year,
+          academicInfo.semester,
+          academicInfo.branch
         )
         setSubjects(data)
         setError(null)
@@ -81,28 +78,22 @@ export function useUserSubjects() {
     }
 
     fetchSubjects()
-  }, [authState.user?.program_id, authState.user?.current_semester])
+  }, [isContextSet, academicInfo.year, academicInfo.semester, academicInfo.branch])
 
   return { subjects, loading, error }
 }
 
 // Hook for notifications
 export function useNotifications() {
-  const { authState } = useAuth()
   const [notifications, setNotifications] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
     async function fetchNotifications() {
-      if (!authState.user?.id) {
-        setLoading(false)
-        return
-      }
-
       try {
         setLoading(true)
-        const data = await DatabaseService.getUserNotifications(authState.user.id)
+        const data = await DatabaseService.getUserNotifications("public-user")
         setNotifications(data)
         setUnreadCount(data.filter((n: any) => !n.is_read).length)
       } catch (err) {
@@ -113,7 +104,7 @@ export function useNotifications() {
     }
 
     fetchNotifications()
-  }, [authState.user?.id])
+  }, [])
 
   const markAsRead = async (notificationId: string) => {
     try {
@@ -130,24 +121,17 @@ export function useNotifications() {
 
 // Hook for study streak
 export function useStudyStreak() {
-  const { authState } = useAuth()
   const [streak, setStreak] = useState<any[]>([])
   const [currentStreak, setCurrentStreak] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchStreak() {
-      if (!authState.user?.id) {
-        setLoading(false)
-        return
-      }
-
       try {
         setLoading(true)
-        const data = await DatabaseService.getUserStudyStreak(authState.user.id)
+        const data = await DatabaseService.getUserStudyStreak("public-user")
         setStreak(data)
 
-        // Calculate current streak
         if (data.length > 0) {
           setCurrentStreak(data[0].streak_count || 0)
         }
@@ -159,19 +143,16 @@ export function useStudyStreak() {
     }
 
     fetchStreak()
-  }, [authState.user?.id])
+  }, [])
 
   const updateStreak = async (studyData: {
     minutes_studied: number
     topics_completed: number
     assignments_submitted: number
   }) => {
-    if (!authState.user?.id) return
-
     try {
-      await DatabaseService.updateStudyStreak(authState.user.id, studyData)
-      // Refresh streak data
-      const data = await DatabaseService.getUserStudyStreak(authState.user.id)
+      await DatabaseService.updateStudyStreak("public-user", studyData)
+      const data = await DatabaseService.getUserStudyStreak("public-user")
       setStreak(data)
       if (data.length > 0) {
         setCurrentStreak(data[0].streak_count || 0)
@@ -186,14 +167,13 @@ export function useStudyStreak() {
 
 // Hook for assignments
 export function useAssignments(subjectId?: string) {
-  const { authState } = useAuth()
   const [assignments, setAssignments] = useState<any[]>([])
   const [submissions, setSubmissions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchAssignments() {
-      if (!subjectId || !authState.user?.id) {
+      if (!subjectId) {
         setLoading(false)
         return
       }
@@ -202,7 +182,7 @@ export function useAssignments(subjectId?: string) {
         setLoading(true)
         const [assignmentData, submissionData] = await Promise.all([
           DatabaseService.getAssignmentsForSubject(subjectId),
-          DatabaseService.getUserAssignmentSubmissions(authState.user.id, subjectId),
+          DatabaseService.getUserAssignmentSubmissions("public-user", subjectId),
         ])
 
         setAssignments(assignmentData)
@@ -215,20 +195,17 @@ export function useAssignments(subjectId?: string) {
     }
 
     fetchAssignments()
-  }, [subjectId, authState.user?.id])
+  }, [subjectId])
 
   const submitAssignment = async (assignmentId: string, submissionData: any) => {
-    if (!authState.user?.id) return
-
     try {
       await DatabaseService.submitAssignment({
-        user_id: authState.user.id,
+        user_id: "public-user",
         assignment_id: assignmentId,
         ...submissionData,
       })
 
-      // Refresh submissions
-      const submissionData2 = await DatabaseService.getUserAssignmentSubmissions(authState.user.id, subjectId!)
+      const submissionData2 = await DatabaseService.getUserAssignmentSubmissions("public-user", subjectId!)
       setSubmissions(submissionData2)
     } catch (err) {
       console.error("Error submitting assignment:", err)
