@@ -168,3 +168,98 @@
     box-shadow: 0.5rem 0.5rem 0 0 white;
   }
 }
+
+/* Upload Tooltip Styles */
+.wrapper {
+  --background: #62abff;
+  --icon-color: #414856;
+  --shape-color-01: #b8cbee;
+  --shape-color-02: #7691e8;
+  --shape-color-03: #fdd053;
+  --width: 90px;
+  --height: 90px;
+  --border-radius: var(--height);
+  width: var(--width);
+  height: var(--height);
+  position: relative;
+  border-radius: var(--border-radius);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wrapper .btn {
+  background: var(--background);
+  width: var(--width);
+  height: var(--height);
+  position: relative;
+  z-index: 3;
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 30px rgba(65, 72, 86, 0.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: plus-animation-reverse 0.5s ease-out forwards;
+}
+
+.wrapper .btn::before,
+.wrapper .btn::after {
+  content: "";
+  display: block;
+  position: absolute;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.wrapper .btn::before {
+  width: 4px;
+  height: 28px;
+}
+
+.wrapper .btn::after {
+  width: 28px;
+  height: 4px;
+}
+
+.wrapper .tooltip {
+  width: 90px;
+  height: 75px;
+  border-radius: 70px;
+  position: absolute;
+  background: #fff;
+  z-index: 2;
+  padding: 0 15px;
+  box-shadow: 0 10px 30px rgba(65, 72, 86, 0.05);
+  opacity: 0;
+  top: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  transition: opacity 0.15s ease-in, top 0.15s ease-in, width 0.15s ease-in;
+}
+
+.wrapper input {
+  height: 100%;
+  width: 100%;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  position: absolute;
+  z-index: 5;
+  opacity: 0;
+}
+
+@keyframes plus-animation {
+  0% { transform: rotate(0) scale(1); }
+  20% { transform: rotate(60deg) scale(0.93); }
+  55% { transform: rotate(35deg) scale(0.97); }
+  80% { transform: rotate(48deg) scale(0.94); }
+  100% { transform: rotate(45deg) scale(0.95); }
+}
+
+@keyframes plus-animation-reverse {
+  0% { transform: rotate(45deg) scale(0.95); }
+  20% { transform: rotate(-15deg); }
+  55% { transform: rotate(10deg); }
+  80% { transform: rotate(-3deg); }
+  100% { transform: rotate(0) scale(1); }
+}
