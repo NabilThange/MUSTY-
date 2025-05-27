@@ -5,6 +5,8 @@ import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AcademicProvider } from "@/contexts/academic-context"
 import { StagewiseToolbarWrapper } from "@/components/stagewise-toolbar-wrapper"
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,6 +36,8 @@ export default function RootLayout({
           </ThemeProvider>
         </AcademicProvider>
         <StagewiseToolbarWrapper />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
