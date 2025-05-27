@@ -9,6 +9,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    serverComponentsExternalPackages: ['pdf-parse', 'tesseract.js']
+  },
   webpack: (config, { isServer }) => {
     // Import mini-css-extract-plugin only in client builds
     if (!isServer) {
