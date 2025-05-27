@@ -38,7 +38,7 @@ export class DatabaseService {
         .select("*")
         .eq("semester", semester)
         .eq("branch", branch)
-        .order("year", { ascending: false })
+        .order("exam_date", { ascending: false })
 
       if (error) throw error
       return data || []
@@ -53,12 +53,9 @@ export class DatabaseService {
     try {
       const { data, error } = await supabase
         .from("pyq_solutions")
-        .select(`
-          *,
-          pyq:pyqs(*)
-        `)
-        .eq("pyq.semester", semester)
-        .eq("pyq.branch", branch)
+        .select("*")
+        .eq("semester", semester)
+        .eq("branch", branch)
 
       if (error) throw error
       return data || []

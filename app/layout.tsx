@@ -7,6 +7,7 @@ import { AcademicProvider } from "@/contexts/academic-context"
 import { StagewiseToolbarWrapper } from "@/components/stagewise-toolbar-wrapper"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { CustomCursor } from '@/components/ui/custom-cursor'
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,7 +20,28 @@ export const metadata: Metadata = {
   description:
     "Free AI-powered study platform with syllabus PDFs, flashcards, quizzes & mindmaps for Mumbai University students",
   keywords: "Mumbai University, study, AI, syllabus, flashcards, quiz, mindmap, education",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
+  authors: [{ name: 'MUSTY Team' }],
+  creator: 'MUSTY Development Team',
+  publisher: 'MUSTY',
+  icons: {
+    icon: '/images/musty-logo.png',
+    shortcut: '/images/musty-logo.png',
+    apple: '/images/musty-logo.png',
+  },
+  openGraph: {
+    title: 'MUSTY - AI Study Companion',
+    description: 'Free AI-powered study platform for Mumbai University students',
+    images: ['/images/musty-logo.png'],
+    type: 'website',
+    url: 'https://musty.study',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MUSTY - AI Study Companion',
+    description: 'Free AI-powered study platform for Mumbai University students',
+    images: ['/images/musty-logo.png'],
+  },
 }
 
 export default function RootLayout({
@@ -32,6 +54,7 @@ export default function RootLayout({
       <body className={inter.className} data-gptw="">
         <AcademicProvider>
           <ThemeProvider attribute="class" forcedTheme="dark" enableSystem={false} disableTransitionOnChange>
+            <CustomCursor />
             {children}
           </ThemeProvider>
         </AcademicProvider>

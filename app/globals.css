@@ -26,6 +26,114 @@
     --background: 0 0% 0%;
     --foreground: 0 0% 100%;
   }
+
+  /* Completely hide and override default cursor */
+  * {
+    cursor: none !important;
+  }
+
+  /* Ensure no default cursors leak through */
+  a, button, input, select, textarea, [role="button"] {
+    cursor: none !important;
+  }
+
+  /* Text selection */
+  ::selection {
+    background-color: rgba(37, 99, 235, 0.3); /* Brutalist blue with opacity */
+  }
+
+  /* Hover states */
+  a:hover, button:hover, [role="button"]:hover {
+    cursor: url("/custom-cursors/c3.png"), pointer;
+  }
+
+  /* Text input */
+  input[type="text"], input[type="email"], textarea {
+    cursor: url("/custom-cursors/c3.png"), text;
+  }
+
+  /* Default Cursor (pointer style) */
+  .pixel-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    width: 20px;
+    height: 24px;
+    background-color: #ffffff;
+    clip-path: polygon(0 0, 100% 50%, 40% 50%, 100% 100%, 40% 60%, 0 100%);
+    border: 2px solid #000000;
+    box-shadow: 4px 4px 0 #000;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    image-rendering: pixelated;
+    mix-blend-mode: difference;
+    transition: transform 0.1s ease;
+  }
+
+  /* Pointer Cursor (crosshair style) */
+  .pixel-pointer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    width: 20px;
+    height: 20px;
+    background:
+      linear-gradient(to right, #000 1px, transparent 1px),
+      linear-gradient(to bottom, #000 1px, transparent 1px);
+    background-size: 4px 4px;
+    background-color: #fff;
+    box-shadow: 4px 4px 0 #000;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+    mix-blend-mode: difference;
+    image-rendering: pixelated;
+  }
+
+  /* Click Cursor */
+  .pixel-click {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    width: 18px;
+    height: 26px;
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    box-shadow: 4px 4px 0 #000;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 80%);
+    image-rendering: pixelated;
+    pointer-events: none;
+    mix-blend-mode: difference;
+  }
+
+  /* Hover State */
+  a:hover, button:hover, input:hover, select:hover, textarea:hover {
+    --cursor-scale: 1.3;
+  }
+
+  a:active, button:active {
+    --cursor-scale: 0.75;
+  }
+
+  /* Loading animation */
+  .cursor-loading .pixel-cursor {
+    animation: cursor-pulse 1s infinite ease-in-out;
+  }
+
+  @keyframes cursor-pulse {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.2);
+      opacity: 0.6;
+    }
+  }
 }
 
 @layer base {

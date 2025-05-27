@@ -9,23 +9,16 @@ export type ResourceType = "pyq" | "pyq_solutions" | "question_bank" | "peer_not
 
 export interface ResourceCardData {
   id: string
-  subject_code: string
-  semester: number
-  branch: string
+  subject_code?: string
+  semester?: number
+  branch?: string
   pdf_url: string
   created_at: string
+  type: ResourceType
   // PYQ specific
-  year?: number
-  type?: string
-  // PYQ Solutions specific
+  exam_date?: string
+  // PYQ Solutions specific (now directly available)
   pyq_id?: string
-  pyq?: {
-    subject_code: string
-    semester: number
-    branch: string
-    year: number
-    type: string
-  }
   // Question Bank specific
   source?: string
   // Peer Notes specific
@@ -42,7 +35,25 @@ export interface ResourceCardProps {
 }
 
 export function ResourceCard({ type, data, onDownload, onAIChat, onRate }: ResourceCardProps) {
+  // Add a method to format month and year
+  const formatPaperDate = (createdAt: string, yearPaper?: number) => {
+    if (!createdAt || !yearPaper) return undefined;
+    
+    const date = new Date(createdAt);
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    return `${months[date.getMonth()]} ${yearPaper}`;
+  }
+
   const getResourceConfig = () => {
+    // Combine paper_month and year_paper if both exist
+    const paperDate = data.paper_month && data.year_paper 
+      ? `${data.paper_month} ${data.year_paper}` 
+      : undefined;
+
     switch (type) {
       case "pyq":
         return {
@@ -51,7 +62,7 @@ export function ResourceCard({ type, data, onDownload, onAIChat, onRate }: Resou
           color: "bg-yellow-500",
           title: `${data.subject_code}`,
           subtitle: `Sem ${data.semester} • ${data.branch}`,
-          badge: data.year?.toString(),
+          badge: data.exam_date,
           downloadText: "DOWNLOAD PYQ",
           aiText: "ASK AI ABOUT THIS",
         }
@@ -60,15 +71,15 @@ export function ResourceCard({ type, data, onDownload, onAIChat, onRate }: Resou
           icon: "🧾",
           label: "PYQ SOLUTION",
           color: "bg-green-600",
-          title: `${data.pyq?.subject_code || data.subject_code} Solution`,
+          title: `${data.subject_code || 'Solution'} `,
           subtitle: `Sem ${data.semester} • ${data.branch}`,
-          badge: data.pyq?.year?.toString(),
+          badge: data.exam_date,
           downloadText: "DOWNLOAD SOLUTION",
           aiText: "ASK AI ABOUT THIS",
         }
       case "question_bank":
         return {
-          icon: "📚",
+          icon: "",
           label: "QUESTION BANK",
           color: "bg-purple-600",
           title: `${data.subject_code} Questions`,
@@ -171,7 +182,7 @@ export function ResourceCard({ type, data, onDownload, onAIChat, onRate }: Resou
               data.type === "main" ? "bg-blue-100 text-blue-800" : "bg-orange-100 text-orange-800"
             }`}
           >
-            {data.type.toUpperCase()}
+            {data.type.toUpperCase()} {data.exam_date ? `• ${data.exam_date}` : ''}
           </span>
         )}
 
