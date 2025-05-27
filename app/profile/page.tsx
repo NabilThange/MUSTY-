@@ -72,38 +72,23 @@ export default function ProfilePage() {
   const router = useRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState("overview")
-  const [profileData, setProfileData] = useState<UserProfile | null>(null)
-  const [editedData, setEditedData] = useState<Partial<UserProfile>>({})
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!authState.isLoading && !authState.isAuthenticated) {
-      router.push("/landing")
-    }
-  }, [authState.isAuthenticated, authState.isLoading, router])
-
-  // Initialize profile data
-  useEffect(() => {
-    if (authState.user) {
-      const mockProfile: UserProfile = {
-        id: authState.user.id,
-        fullName: authState.user.fullName,
-        email: authState.user.email,
-        prn: authState.user.prn || "2023COMP001",
-        phone: "+91 9876543210",
-        bio: "Computer Science student passionate about web development and AI. Currently exploring full-stack development with React and Node.js.",
-        profilePicture: "/placeholder.svg?height=120&width=120",
-        yearOfStudy: "FY",
-        currentSemester: authState.user.current_semester || 1,
-        department: "Computer Engineering",
-        program: "Bachelor of Engineering",
-        enrollmentDate: "2023-08-15",
-        profileVisibility: "classmates",
-      }
-      setProfileData(mockProfile)
-      setEditedData(mockProfile)
-    }
-  }, [authState.user])
+  const mockProfile: UserProfile = {
+    id: "mock-user-123",
+    fullName: "Mock User Name",
+    email: "mockuser@example.com",
+    prn: "2023COMP001",
+    phone: "+91 9876543210",
+    bio: "Computer Science student passionate about web development and AI. Currently exploring full-stack development with React and Node.js.",
+    profilePicture: "/placeholder.svg?height=120&width=120",
+    yearOfStudy: "FY",
+    currentSemester: 1,
+    department: "Computer Engineering",
+    program: "Bachelor of Engineering",
+    enrollmentDate: "2023-08-15",
+    profileVisibility: "classmates",
+  }
+  const [profileData, setProfileData] = useState<UserProfile | null>(mockProfile)
+  const [editedData, setEditedData] = useState<Partial<UserProfile>>(mockProfile)
 
   // Mock data for academic progress
   const academicProgress: AcademicProgress = {
@@ -179,24 +164,15 @@ export default function ProfilePage() {
     setIsEditing(false)
   }
 
-  if (authState.isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="flex items-center justify-center mb-4">
-            <div className="h-12 w-12 bg-yellow-500 border-4 border-black rotate-12 animate-pulse"></div>
-            <div className="h-12 w-12 bg-blue-600 border-4 border-black -ml-6 -rotate-12 animate-pulse"></div>
-          </div>
-          <h1 className="text-2xl font-black font-mono">STUDGEM</h1>
-          <p className="font-bold font-mono">Loading Profile...</p>
-        </div>
-      </div>
-    )
+  const handleDeleteAccount = () => {
+    if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+      // Handle account deletion - since auth is removed, maybe just redirect or show a message
+      // logout()
+      router.push("/landing")
+    }
   }
 
-  if (!authState.isAuthenticated || !profileData) {
-    return null
-  }
+  if (!profileData) return null;
 
   return (
     <div className="min-h-screen bg-white font-mono">
