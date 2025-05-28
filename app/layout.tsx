@@ -7,7 +7,7 @@ import { AcademicProvider } from "@/contexts/academic-context"
 import { StagewiseToolbarWrapper } from "@/components/stagewise-toolbar-wrapper"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { CustomCursor } from '@/components/ui/custom-cursor'
+import { CustomCursor } from "@/components/ui/custom-cursor"
 
 const inter = Inter({
   subsets: ["latin"],

@@ -6,15 +6,18 @@ export interface FlashcardProps {
   answer: string
   subject?: string
   difficulty?: 'easy' | 'medium' | 'hard'
+  isFlipped: boolean
+  setIsFlipped: (value: boolean) => void
 }
 
-export function Flashcard({ 
-  question, 
-  answer, 
-  subject = 'General', 
-  difficulty = 'medium' 
+export function Flashcard({
+  question,
+  answer,
+  subject = 'General',
+  difficulty = 'medium',
+  isFlipped,
+  setIsFlipped
 }: FlashcardProps) {
-  const [isFlipped, setIsFlipped] = useState(false)
 
   // Difficulty color mapping
   const difficultyColors = {
@@ -22,11 +25,11 @@ export function Flashcard({
     medium: 'bg-yellow-500',
     hard: 'bg-red-500'
   }
-
+  
   return (
     <motion.div 
       className="w-full max-w-md mx-auto h-[400px] perspective group"
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ scale: 1.02, translateY: -4, boxShadow: 'none' }} // Apply hover effects from design rules
       whileTap={{ scale: 0.98 }}
       onClick={() => setIsFlipped(!isFlipped)}
     >
@@ -36,12 +39,10 @@ export function Flashcard({
           w-full 
           h-full 
           transition-transform 
-          duration-700 
-          ease-in-out 
-          transform-style-3d 
-          ${isFlipped ? 'rotate-y-180' : ''}
-          cursor-pointer
+          duration-600 ease-in-out
+          [transform-style:preserve-3d]
         `}
+        // Use initial/animate from previous flip implementation for smooth transition
         initial={{ rotateY: 0 }}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.6, type: 'tween' }}
@@ -51,7 +52,7 @@ export function Flashcard({
           className={`
             absolute 
             inset-0 
-            backface-hidden 
+            [backface-visibility:hidden] 
             border-8 
             border-black 
             bg-white 
@@ -59,7 +60,7 @@ export function Flashcard({
             flex-col 
             justify-between 
             p-6 
-            ${!isFlipped ? 'z-10' : 'z-0'}
+            cursor-pointer
           `}
         >
           <div className="flex justify-between items-start">
@@ -99,8 +100,8 @@ export function Flashcard({
           className={`
             absolute 
             inset-0 
-            backface-hidden 
-            rotate-y-180 
+            [backface-visibility:hidden] 
+            [transform:rotateY(180deg)] 
             border-8 
             border-black 
             bg-yellow-500 
@@ -109,7 +110,7 @@ export function Flashcard({
             justify-center 
             items-center 
             p-6 
-            ${isFlipped ? 'z-10' : 'z-0'}
+            cursor-pointer
           `}
         >
           <div className="text-center">
@@ -136,13 +137,21 @@ export function FlashcardDeck({
   onMarkKnown?: (index: number) => void 
 }) {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
+  const [isFlipped, setIsFlipped] = useState(false)
 
   const goToNextCard = () => {
+    setIsFlipped(false)
     setCurrentCardIndex((prev) => (prev + 1) % flashcards.length)
+  }
+
+  const goToPreviousCard = () => {
+    setIsFlipped(false)
+    setCurrentCardIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length)
   }
 
   const markCurrentCardKnown = () => {
     onMarkKnown?.(currentCardIndex)
+    setIsFlipped(false)
     goToNextCard()
   }
 
@@ -154,9 +163,31 @@ export function FlashcardDeck({
     <div className="flex flex-col items-center space-y-6">
       <Flashcard 
         {...currentCard}
+        isFlipped={isFlipped}
+        setIsFlipped={setIsFlipped}
       />
       
       <div className="flex space-x-4">
+        <button 
+          onClick={goToPreviousCard}
+          disabled={currentCardIndex === 0}
+          className="
+            bg-gray-300 
+            text-black 
+            border-4 
+            border-black 
+            px-6 
+            py-2 
+            font-bold 
+            uppercase 
+            hover:bg-gray-400 
+            transition-colors
+            disabled:opacity-50 disabled:cursor-not-allowed
+          "
+        >
+          Previous Card
+        </button>
+
         <button 
           onClick={goToNextCard}
           className="
@@ -194,6 +225,7 @@ export function FlashcardDeck({
         </button>
       </div>
       
+      {/* Progress Indicator */}
       <div className="text-sm font-bold uppercase text-gray-600">
         Card {currentCardIndex + 1} of {flashcards.length}
       </div>

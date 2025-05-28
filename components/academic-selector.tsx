@@ -185,7 +185,7 @@ export function AcademicSelectorModal({ isOpen, onClose }: { isOpen: boolean; on
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="max-w-5xl w-full max-h-[90vh] overflow-y-auto -mt-[50rem]">
         <AcademicSelector onComplete={onClose} showAsModal />
       </div>
     </div>

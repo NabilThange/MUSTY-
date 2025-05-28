@@ -21,10 +21,8 @@ export default function DashboardPage() {
 
   if (!isContextSet) {
     return (
-      <div className="min-h-screen bg-white font-mono">
-        <div className="container mx-auto px-4 py-16">
-          <AcademicSelector onComplete={() => setShowSelector(false)} />
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-white font-mono px-4">
+        <AcademicSelector onComplete={() => setShowSelector(false)} />
       </div>
     )
   }

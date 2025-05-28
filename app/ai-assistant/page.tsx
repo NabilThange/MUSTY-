@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/tooltip'
 import { Flashcard, FlashcardDeck } from '@/components/ui/flashcard'
 import { FlashcardProps } from '@/components/ui/flashcard'
+import { QuizDeck } from '@/components/ui/QuizDeck'
+import { QuizItem } from '@/components/ui/QuizCard'
 
 // Define AI modes as constants
 const AI_MODES = {
@@ -44,7 +46,8 @@ export default function AIAssistantPage() {
   const [messages, setMessages] = useState<Array<{ 
     role: "user" | "assistant"; 
     content: string; 
-    flashcards?: FlashcardProps[] 
+    flashcards?: FlashcardProps[];
+    quizData?: QuizItem[];
   }>>([])
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -206,6 +209,30 @@ export default function AIAssistantPage() {
           const errorMessage = {
             role: "assistant" as const,
             content: `🤖 Error Generating Flashcards:\n\n${data.error}\n\n${data.details || 'Please try again or check your input.'}`
+          }
+          setMessages((prev) => [...prev, errorMessage])
+        } else if (activeMode === AI_MODES.QUIZ && data.quizData) {
+          console.group('❓ Quiz Generation')
+          console.log('Raw API Response:', data)
+          console.log('Generated Quiz Data:', data.quizData)
+          console.log('Question Count:', data.quizData.length)
+
+          const quizMessage = {
+            role: "assistant" as const,
+            content: `❓ Generated a quiz with ${data.quizData.length} questions for you!`,
+            quizData: data.quizData
+          }
+          setMessages((prev) => [...prev, quizMessage])
+        } else if (activeMode === AI_MODES.QUIZ && data.error) {
+          console.error('Quiz Generation Error:', {
+            mode: activeMode,
+            error: data.error,
+            details: data.details
+          })
+
+          const errorMessage = {
+            role: "assistant" as const,
+            content: `🤖 Error Generating Quiz:\n\n${data.error}\n\n${data.details || 'Please try again or check your input.'}`
           }
           setMessages((prev) => [...prev, errorMessage])
         } else {
@@ -600,17 +627,12 @@ Please check your internet connection and try again.`
               {msg.flashcards ? (
                 <div>
                   <CustomMarkdown>{`🃏 Generated ${msg.flashcards.length} flashcards for your study session!`}</CustomMarkdown>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {msg.flashcards.map((card, cardIndex) => (
-                      <Flashcard 
-                        key={cardIndex} 
-                        question={card.question} 
-                        answer={card.answer}
-                        subject={card.subject}
-                        difficulty={card.difficulty}
-                      />
-                    ))}
-                  </div>
+                  <FlashcardDeck flashcards={msg.flashcards} />
+                </div>
+              ) : msg.quizData ? (
+                <div>
+                   <CustomMarkdown>{`❓ Generated a quiz with ${msg.quizData.length} questions for you!`}</CustomMarkdown>
+                   <QuizDeck questions={msg.quizData} />
                 </div>
               ) : (
                 <CustomMarkdown>{msg.content}</CustomMarkdown>

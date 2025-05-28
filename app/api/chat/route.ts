@@ -96,73 +96,38 @@ Your goal is to generate high-quality study flashcards that help the student lea
 - Include formulas, mnemonics, or short use-cases when applicable
 - Generate between 4–6 flashcards per request unless otherwise asked`,
   
-  quiz: `🎯 MODE: QUIZ
+  quiz: `✔️ Updated Prompt for AI (Quiz Mode):
 
-You are now in Quiz Mode.
+You are an expert educational quiz creator.
 
-Generate MCQs that challenge the student to apply, recall, and understand concepts.
+✏️ **Instructions**:
+1. Respond ONLY with a **valid JSON array**.
+2. Each quiz item MUST follow this exact structure:
+   - "question": string (max 300 chars)
+   - "options": array of 4 strings
+   - "answer": string (must match one of the options)
+   - "explanation": string
+   - "type": "recall" | "application" | "reasoning"
+   - "importance": string (e.g. "core concept", "highly testable")
 
-🔹 Output format (strict JSON):
+📦 **Output Format Example**:
+\`\`\`json
 [
   {
-    "question": "Which data structure uses FIFO?",
-    "options": ["Stack", "Queue", "Tree", "Heap"],
-    "answer": "Queue",
-    "explanation": "A Queue uses First-In-First-Out ordering."
-  },
-  ...
+    "question": "What is JSX in React?",
+    "options": ["A backend library", "A syntax extension", "A CSS method", "A testing tool"],
+    "answer": "A syntax extension",
+    "explanation": "JSX is a syntax extension for JavaScript used with React to describe UI elements.",
+    "type": "recall",
+    "importance": "JSX is foundational to building React apps"
+  }
 ]
-
-🔹 Guidelines:
-- 3 to 5 questions per request unless otherwise asked
-- Use a mix of difficulty (easy → hard)
-- Explanation is REQUIRED for every answer
-- Avoid trick questions
-
-🧠 Optional Additions:
-- Label question type (recall, application, analysis)
-- Highlight why the correct answer is important`,
+\`\`\`
+`,
   
-  mindmap: `🎯 MODE: MINDMAP
-
-You are now in Mindmap Mode.
-
-Generate a structured, hierarchical JSON mindmap that models how topics and subtopics relate.
-
-🔹 Output format:
-{
-  "title": "Thermodynamics",
-  "nodes": [
-    {
-      "title": "Laws of Thermodynamics",
-      "nodes": [
-        { "title": "First Law", "nodes": [] },
-        { "title": "Second Law", "nodes": [] }
-      ]
-    },
-    {
-      "title": "Applications",
-      "nodes": [
-        { "title": "Engines", "nodes": [] },
-        { "title": "Refrigeration", "nodes": [] }
-      ]
-    }
-  ]
-}
-
-🔹 Guidelines:
-- The root should be the topic
-- Branches should be logical subtopics
-- Go 2–3 levels deep
-- Avoid repeating nodes
-- Ensure relationships are clear and academic
-
-📎 Add Optional Nodes:
-- "Real-world examples"
-- "Common mistakes"
-- "Exam tips"`,
+  mindmap: `🎯 MODE: MINDMAP\n\nYou are now in Mindmap Mode.\n\nGenerate a structured, hierarchical JSON mindmap that models how topics and subtopics relate.\n\n🔹 Output format:\n{\n  \"title\": \"Thermodynamics\",\n  \"nodes\": [\n    {\n      \"title\": \"Laws of Thermodynamics\",\n      \"nodes\": [\n        { \"title\": \"First Law\", \"nodes\": [] },\n        { \"title\": \"Second Law\", \"nodes\": [] }\n      ]\n    },\n    {\n      \"title\": \"Applications\",\n      \"nodes\": [\n        { \"title\": \"Engines\", \"nodes\": [] },\n        { \"title\": \"Refrigeration\", \"nodes\": [] }\n      ]\n    }\n  ]\n}\n\n🔹 Guidelines:\n- The root should be the topic\n- Branches should be logical subtopics\n- Go 2–3 levels deep\n- Avoid repeating nodes\n- Ensure relationships are clear and academic\n\n📎 Add Optional Nodes:\n- \"Real-world examples\"\n- \"Common mistakes\"\n- \"Exam tips\"`,
   
-  ethical: `🔒 ETHICAL GUARDRAILS
+  ethical: `�� ETHICAL GUARDRAILS
 
 Apply these rules in ALL MODES:
 - Never give direct answers to tests, exams, or assignments.
@@ -171,8 +136,8 @@ Apply these rules in ALL MODES:
 - Respect the student's learning process, don't replace it.`
 }
 
-// Modify generateSystemPrompt to use typed mode
-const generateSystemPrompt = (mode: keyof ModeSystemPrompts, context: any) => {
+// Modify generateSystemPrompt to use typed mode and accept messages
+const generateSystemPrompt = (mode: keyof ModeSystemPrompts, context: any, messages: any[]) => {
   // Select base prompt based on mode
   const universalPrompt = MODE_SYSTEM_PROMPTS.universal
   const baseModePrompt = MODE_SYSTEM_PROMPTS[mode] || MODE_SYSTEM_PROMPTS.chat
@@ -192,7 +157,7 @@ ${context?.uploadedNoteContext
   : ''}
 `
 
-  return `${universalPrompt}\n\n${baseModePrompt}\n\n${ethicalPrompt}\n\n${contextDetails}`
+  return `${universalPrompt}\n\n${baseModePrompt}\n\n${ethicalPrompt}\n\n${contextDetails}\n\n### 🗣️ USER QUERY CONTEXT\nI require relevant information related to the user's query: "${messages[messages.length - 1].content}", specifically tailored for a ${context?.year || 'unknown'} ${context?.semester || 'unknown'} ${context?.branch || 'unknown'} student. Please ensure the response covers key concepts, practical applications, and common challenges faced in this area of study.`
 }
 
 // Comprehensive StudGem AI System Prompt
@@ -329,6 +294,18 @@ const FlashcardSchema = z.object({
 
 const FlashcardArraySchema = z.array(FlashcardSchema)
 
+// Quiz generation schema
+const QuizItemSchema = z.object({
+  question: z.string().min(5).max(500),
+  options: z.array(z.string().min(1).max(200)).min(2),
+  answer: z.string().min(1).max(200),
+  explanation: z.string().min(10),
+  type: z.string().optional(),
+  importance: z.string().optional(),
+})
+
+const QuizArraySchema = z.array(QuizItemSchema)
+
 export async function POST(req: NextRequest) {
   // Validate API key is present
   const groqApiKey = process.env.GROQ_API_KEY
@@ -350,7 +327,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate mode-specific system prompt
-    const systemPrompt = generateSystemPrompt(mode, context)
+    const systemPrompt = generateSystemPrompt(mode, context, messages)
 
     // Prepare messages for Groq API
     const groqMessages = [
@@ -410,31 +387,48 @@ export async function POST(req: NextRequest) {
             messages: [
               {
                 role: 'system',
-                content: `You are an expert educational content creator generating flashcards. 
+                content: `🃏 You are an expert academic content creator specialized in generating high-quality flashcards to support effective self-study.
 
-CRITICAL INSTRUCTIONS:
-1. ALWAYS respond with a VALID JSON ARRAY of flashcard objects
-2. EACH flashcard MUST have these EXACT keys:
-   - "question": string (5-200 characters)
-   - "answer": string (5-500 characters)
+🔐 CRITICAL INSTRUCTIONS:
+1. Your response MUST be a **valid JSON array** of flashcard objects.
+2. Each flashcard MUST include the following EXACT keys:
+   - "question": string (length 5–200 characters)
+   - "answer": string (length 5–500 characters)
    - "subject": string (optional, default "General")
-   - "difficulty": "easy" | "medium" | "hard" (optional, default "medium")
+   - "difficulty": one of "easy" | "medium" | "hard" (optional, default "medium")
 
-EXAMPLE OUTPUT:
+✅ EXAMPLE OUTPUT:
 [
   {
     "question": "What is a stack in data structures?",
-    "answer": "A stack is a linear data structure that follows Last In, First Out (LIFO) principle.",
+    "answer": "A stack is a linear data structure that follows the Last In, First Out (LIFO) principle.",
     "subject": "Data Structures",
     "difficulty": "medium"
   }
 ]
 
-REQUIREMENTS:
-- Generate 4-6 flashcards
-- Focus on key concepts
-- Use clear, concise language
-- Ensure educational value`
+🧠 USER QUERY & ACADEMIC CONTEXT:
+Generate flashcards based on the user's query:
+"${messages[messages.length - 1].content}"
+
+Use the following academic context:
+- Year: ${context?.year || 'Unknown'}
+- Semester: ${context?.semester || 'Unknown'}
+- Branch/Department: ${context?.branch || 'Unknown'}
+
+🎯 OBJECTIVE:
+- Generate 4 to 6 well-structured flashcards
+- Focus on key concepts, real-world applications, and common student challenges
+- Use clear, concise, and educationally effective language
+- Generate the starting card easy and increase the hardness of the cards as you go on
+
+🚫 RESTRICTIONS:
+- Do NOT return anything outside the JSON array
+- Do NOT include markdown, code blocks, or explanations
+- Do NOT add extra metadata or fields outside the allowed keys
+
+Return ONLY the JSON array of flashcards.`
+
               },
               {
                 role: 'user',
@@ -511,6 +505,138 @@ Additional Context: ${context?.uploadedNoteContext?.substring(0, 500) || 'No spe
           details: error instanceof Error 
             ? error.message 
             : 'An unexpected error occurred during flashcard generation'
+        }, { status: 500 })
+      }
+    } else if (mode === 'quiz') {
+      try {
+        const quizResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama3-70b-8192',
+            messages: [
+              {
+                role: 'system',
+                content: `🎯 MODE: QUIZ GENERATOR
+
+You are an expert at creating multiple-choice quiz questions based on academic material.
+
+🔐 CRITICAL INSTRUCTIONS:
+1. Your response MUST be a **valid JSON array** of quiz question objects.
+2. Each object in the array MUST contain these EXACT keys:
+   - "question": string (5-500 characters)
+   - "options": string[] (array of at least 2 strings, each 1-200 characters)
+   - "answer": string (1-200 characters, must exactly match one option)
+   - "explanation": string (at least 10 characters)
+   - "type": string (optional - e.g., "recall", "application")
+   - "importance": string (optional - brief note on why it's important)
+
+✅ EXAMPLE OUTPUT:
+[
+  {
+    "question": "Which data structure uses FIFO?",
+    "options": ["Stack", "Queue", "Tree", "Heap"],
+    "answer": "Queue",
+    "explanation": "A Queue is a linear data structure where the first element added is the first one removed.",
+    "type": "recall"
+  },
+  {
+    "question": "In what scenario would a queue be more appropriate than a stack?",
+    "options": ["Managing function calls", "Implementing undo functionality", "Processing tasks in the order they arrive", "Traversing a tree structure"],
+    "answer": "Processing tasks in the order they arrive",
+    "explanation": "Queues are used when the order of processing matters based on arrival time, like in task scheduling or message queues. Stacks are used for LIFO scenarios like function calls or undo features.",
+    "type": "application"
+  }
+]
+
+🧠 USER QUERY & ACADEMIC CONTEXT:
+Generate quiz questions related to the user's query: "${messages[messages.length - 1].content}"
+
+Consider the academic context:
+- Year: ${context?.year || 'Unknown'}
+- Semester: ${context?.semester || 'Unknown'}
+- Branch/Department: ${context?.branch || 'Unknown'}
+
+🎯 OBJECTIVE:
+- Generate between 3 and 5 diverse quiz questions.
+- Ensure questions cover key concepts, practical applications, or common challenges relevant to the academic context and query.
+- Explanations must be clear and informative.
+
+🚫 RESTRICTIONS:
+- Do NOT return anything outside the JSON array.
+- Do NOT include markdown, code blocks (except for the example), or conversational text.
+- Do NOT add extra metadata or fields outside the allowed keys.
+
+Return ONLY the JSON array of quiz questions.`
+              },
+              {
+                role: 'user',
+                content: `Generate quiz questions based on the topic: ${messages[messages.length - 1].content}`
+              }
+            ],
+            response_format: { type: 'json_object' },
+            max_tokens: 1500,
+            temperature: 0.7
+          })
+        })
+
+        const quizData = await quizResponse.json()
+
+        console.log('Raw Quiz Data Object:', quizData);
+
+        const rawContent = quizData.choices[0]?.message?.content;
+
+        console.log('Raw Quiz Content:', rawContent);
+
+        // Attempt to parse and validate the JSON response
+        let parsedQuizData: any[] = [];
+        try {
+          parsedQuizData = JSON.parse(rawContent || '[]');
+        } catch (parseError) {
+          console.error('Quiz JSON parse failed:', parseError);
+          // Fallback: try to extract JSON from text if Groq wrapped it
+          const jsonMatch = rawContent?.match(/[\s\S]*\]/);
+          if(jsonMatch) {
+            try {
+              parsedQuizData = JSON.parse(jsonMatch[0]);
+            } catch(extractParseError) {
+              console.error('Quiz JSON extraction parse failed:', extractParseError);
+            }
+          }
+        }
+
+        // Validate parsed data
+        try {
+          const validatedQuizData = QuizArraySchema.parse(parsedQuizData);
+
+          return NextResponse.json({ 
+            content: 'Quiz generated successfully', 
+            quizData: validatedQuizData 
+          })
+        } catch (validationError) {
+          console.error('Quiz Validation Error:', {
+            error: validationError,
+            parsedQuizData: parsedQuizData
+          });
+
+          return NextResponse.json({ 
+            error: 'Failed to generate valid quiz data', 
+            details: validationError instanceof Error 
+              ? validationError.message 
+              : 'Validation failed. Unable to parse quiz data.',
+            rawContent: rawContent // Include raw content for debugging
+          }, { status: 500 })
+        }
+      } catch (error) {
+        console.error('Comprehensive Quiz Generation Error:', error);
+        return NextResponse.json({ 
+          error: 'Failed to generate quiz', 
+          details: error instanceof Error 
+            ? error.message 
+            : 'An unexpected error occurred during quiz generation'
         }, { status: 500 })
       }
     }
