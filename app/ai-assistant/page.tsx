@@ -628,7 +628,7 @@ Please check your internet connection and try again.`
                 <div>
                   <CustomMarkdown>{`🃏 Generated ${msg.flashcards.length} flashcards for your study session!`}</CustomMarkdown>
                   <FlashcardDeck flashcards={msg.flashcards} />
-                </div>
+                  </div>
               ) : msg.quizData ? (
                 <div>
                    <CustomMarkdown>{`❓ Generated a quiz with ${msg.quizData.length} questions for you!`}</CustomMarkdown>

@@ -10,10 +10,10 @@ export interface FlashcardProps {
   setIsFlipped: (value: boolean) => void
 }
 
-export function Flashcard({
-  question,
-  answer,
-  subject = 'General',
+export function Flashcard({ 
+  question, 
+  answer, 
+  subject = 'General', 
   difficulty = 'medium',
   isFlipped,
   setIsFlipped
@@ -25,7 +25,7 @@ export function Flashcard({
     medium: 'bg-yellow-500',
     hard: 'bg-red-500'
   }
-  
+
   return (
     <motion.div 
       className="w-full max-w-md mx-auto h-[400px] perspective group"
